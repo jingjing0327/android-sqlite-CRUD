@@ -11,7 +11,7 @@ listClazzs.add(xzoo);<br>
 }<br>
 new DBUtils(this).saveAll(listClazzs);<br>
 
-//a保存单个 save single Class data <br>
+//保存单个 save single Class data <br>
 Person p = new Person();<br>
 p.setId(888);<br>
 p.setName("name888");<br>
