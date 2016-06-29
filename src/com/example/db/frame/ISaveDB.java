@@ -1,5 +1,6 @@
 package com.example.db.frame;
 
+
 import java.util.List;
 /**
  * 
@@ -7,7 +8,7 @@ import java.util.List;
  *
  */
 public interface ISaveDB {
-	public <T> void save(T t);
+	public <T> long save(T t);
 
 	public <T> void saveAll(List<T> listClazzs);
 }

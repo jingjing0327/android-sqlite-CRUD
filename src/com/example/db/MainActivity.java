@@ -7,16 +7,18 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.db.frame.DBUtils;
+import com.example.db.frame.CRUDImpl;
+import com.example.db.frame.ICRUD;
 /**
  * 
  * @author LiQiong
  * 
  */
 public class MainActivity extends Activity {
-
+	private ICRUD crud=new CRUDImpl();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Platform.context=this;
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		// 保存全部-----------------------------------
@@ -28,7 +30,7 @@ public class MainActivity extends Activity {
 			xzoo.setPersonName("personName呵呵" + i);
 			listClazzs.add(xzoo);
 		}
-		new DBUtils(this).saveAll(listClazzs);
+		crud.saveAll(listClazzs);
 		//---------------------------------------------
 		//```````````````````````````````````````````````````````````````
 		// 保存单个---------------------------------
@@ -36,20 +38,20 @@ public class MainActivity extends Activity {
 		p.setId(888);
 		p.setName("name888");
 		p.setPersonName("personName888");
-		new DBUtils(this).save(p);
+		crud.save(p);
 		//---------------------------------------------
 		//```````````````````````````````````````````````````````````````
 		// 查询所有------------------------------------
-		Log.e("MainActivity", new DBUtils(this).findAll(Person.class).toString());
+		Log.e("MainActivity", crud.findAll(Person.class).toString());
 		//---------------------------------------------
 		//```````````````````````````````````````````````````````````````
 		// 删除所有-----------------------------------
-		new DBUtils(this).deleteAll(Person.class);
+		crud.deleteAll(Person.class);
 		//---------------------------------------------
 		//```````````````````````````````````````````````````````````````
 		// 删除-----------------------
 		String[] whereArgs = { "0" };
-		new DBUtils(this).delete(Person.class, "id=?", whereArgs);
+		crud.delete(Person.class, "id=?", whereArgs);
 		//-----------------------------
 		//```````````````````````````````````````````````````````````````
 		// 修改数据------------------
@@ -58,7 +60,7 @@ public class MainActivity extends Activity {
 		p1.setId(88888);
 		p1.setPersonName("personName888");
 		String[] whereArgs1 = { "0" };
-		new DBUtils(this).update(p1, "id=?", whereArgs1);
+		crud.update(p1, "id=?", whereArgs1);
 		//---------------------------------------
 	}
 }

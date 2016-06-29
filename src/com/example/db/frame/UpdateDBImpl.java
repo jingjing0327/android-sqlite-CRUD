@@ -1,24 +1,37 @@
 package com.example.db.frame;
 
+
+
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+
 /**
  * 
  * @author LiQiong
- *
+ * 
  */
 public class UpdateDBImpl implements IUpdateDB {
 	private SQLiteDatabase sqlDb;
+
+	public SQLiteDatabase getSqlDb() {
+		return sqlDb;
+	}
+
+	public void setSqlDb(SQLiteDatabase sqlDb) {
+		this.sqlDb = sqlDb;
+	}
 
 	public UpdateDBImpl(SQLiteDatabase sqlDb) {
 		this.sqlDb = sqlDb;
 	}
 
 	@Override
-	public <T> void update(T t, String whereClause, String[] whereArgs) {
+	public <T> int update(T t, String whereClause, String[] whereArgs) {
 		DatabaseUtil databaseUtil = new DatabaseUtil();
 		ContentValues values = databaseUtil.valuesGet(t);
-		sqlDb.update(t.getClass().getSimpleName(), values, whereClause, whereArgs);
+		// the number of rows affected
+		int affected = sqlDb.update(t.getClass().getSimpleName(), values, whereClause, whereArgs);
 		databaseUtil = null;
+		return affected;
 	}
 }

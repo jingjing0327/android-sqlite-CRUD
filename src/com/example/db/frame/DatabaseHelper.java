@@ -1,5 +1,6 @@
 package com.example.db.frame;
 
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -10,8 +11,16 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-	private static final String DB_NAME = "ttdb";
+	private static final String DB_NAME = "rgbvr_player_db";
 	public static  int version = 1;
+	private static DatabaseHelper dbHelper;
+	
+	public static DatabaseHelper getInstance(Context context) {
+		if(dbHelper == null) {
+			dbHelper = new DatabaseHelper(context);
+		}
+		return dbHelper;
+	}
 
 	public DatabaseHelper(Context context) {
 		super(context, DB_NAME, null, version);
@@ -19,6 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
+		
 		
 	}
 

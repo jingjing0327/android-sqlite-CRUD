@@ -1,5 +1,6 @@
 package com.example.db.frame;
 
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,14 +9,38 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 /**
  * 
  * @author LiQiong
- *
+ * 
  */
 public class DatabaseUtil {
 	private final static String DBVarChar = "varchar(100)";
-	private final static String DBInt = "int";
+	private final static String DBInt = "integer";
+	private final static String DBBoolean = "BOOLEAN";
+	private final static String DBFloat = "FLOAT";
+	private final static String DBLong = "INTEGER(4)";
+	private final static String DBDouble = "DOUBLE";
+
+	/**
+	 * 判断是否存在某一张表
+	 * 
+	 * @param tableName
+	 * @return true is exist,false is not exist;
+	 */
+	public static boolean isExistTable(SQLiteDatabase sqlDb, String tableName) {
+		String sql = "SELECT COUNT(*) as RESULT FROM SQLITE_MASTER WHERE NAME = ?";
+		Cursor cursor = sqlDb.rawQuery(sql, new String[] { tableName });
+		int count = 0;
+		if (cursor.moveToFirst())
+			count = cursor.getInt(cursor.getColumnIndex("RESULT"));
+		if (count >= 1)
+			return true;
+		return false;
+	}
 
 	/**
 	 * create table sql
@@ -47,15 +72,25 @@ public class DatabaseUtil {
 	 * @param javaType
 	 * @return
 	 */
-	private String javaToDBType(String javaType) {
-		if ("String".equals(javaType)) {
+	public String javaToDBType(String javaType) {
+		if ("String".equals(javaType))
 			return DBVarChar;
-		}
-		if ("int".equals(javaType)) {
+		if ("int".equals(javaType))
 			return DBInt;
-		}
-		if ("Intent".equals(javaType)) {
+		if ("Intent".equals(javaType))
 			return DBInt;
+		if ("boolean".equals(javaType))
+			return DBBoolean;
+		if ("long".equals(javaType))
+			return DBLong;
+		if ("float".equals(javaType))
+			return DBFloat;
+		if ("double".equals(javaType))
+			return DBDouble;
+		try {
+			throw new Throwable("没有这个类型");
+		} catch (Throwable e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -71,7 +106,7 @@ public class DatabaseUtil {
 		Method[] methods = t.getClass().getMethods();
 		for (int i = 0; i < methods.length; i++) {
 			Method method = methods[i];
-			if (!method.getName().equals("getClass") && method.getName().startsWith("get")) {
+			if (!method.getName().equals("getClass") && method.getName().startsWith("get") || method.getName().startsWith("is")) {
 				for (int j = 0; j < fieldDBs.size(); j++) {
 					if (method.getName().toLowerCase(Locale.getDefault()).contains(fieldDBs.get(j).getFieldName().toLowerCase(Locale.getDefault()))) {
 						try {
