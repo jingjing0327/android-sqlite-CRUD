@@ -110,6 +110,9 @@ public class DatabaseUtil {
 				for (int j = 0; j < fieldDBs.size(); j++) {
 					if (method.getName().toLowerCase(Locale.getDefault()).contains(fieldDBs.get(j).getFieldName().toLowerCase(Locale.getDefault()))) {
 						try {
+							Object keyValue = method.invoke(t);
+							if (keyValue == null)
+								keyValue = "null";
 							values.put(fieldDBs.get(j).getFieldName(), method.invoke(t).toString());
 						} catch (IllegalAccessException e) {
 							e.printStackTrace();
