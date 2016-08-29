@@ -14,7 +14,9 @@ import com.example.db.frame.ICRUD;
  * @author LiQiong
  *  代码写的像屎一样
  * 我是macbook pro写的代码
-*/
+ *  我是台式机写的代码
+ */
+>>>>>>> ca23e227c01bf1172ddc069c67b90e7f915eeaa8
 public class MainActivity extends Activity {
 	
 	private ICRUD crud=new CRUDImpl();
