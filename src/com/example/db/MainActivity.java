@@ -12,10 +12,12 @@ import com.example.db.frame.ICRUD;
 /**
  * 
  * @author LiQiong
- * 
+ *  代码写的像屎一样
  */
 public class MainActivity extends Activity {
+	
 	private ICRUD crud=new CRUDImpl();
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Platform.context=this;
