@@ -13,14 +13,7 @@ import com.example.db.frame.ICRUD;
  * 
  * @author LiQiong
  *  代码写的像屎一样
- *  嚯嚯嚯
- *  嚯嚯嚯
- *  嚯嚯嚯
- *  哈哈哈
- *  哈哈哈
- *  哈哈哈
- *  哈哈哈
- *  哈哈哈
+ *  我是台式机写的代码
  */
 public class MainActivity extends Activity {
 	
