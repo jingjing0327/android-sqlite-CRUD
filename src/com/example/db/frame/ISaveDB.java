@@ -1,7 +1,8 @@
-package com.example.db.frame;
+package com.chazuo.czlib.db;
 
 
 import java.util.List;
+
 /**
  * 
  * @author LiQiong

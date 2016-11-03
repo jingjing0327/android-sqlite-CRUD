@@ -1,15 +1,14 @@
-package com.example.db.frame;
+package com.chazuo.czlib.db;
 
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 /**
  * 
@@ -49,24 +48,35 @@ public class FindDBImpl implements IFindDB {
 			while (cursor.moveToNext()) {
 				T instance = t.newInstance();
 				for (int i = 0; i < field.length; i++) {
+					if (field[i].isSynthetic())
+						continue;
 					invokeValue(field[i], cursor, t, instance);
 				}
 				tList.add(instance);
 			}
+			cursor.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return tList;
 	}
 
+	@Override
+	public <T> List<T> find(Class<T> t, String selection, String[] selectionArgs) {
+		return find(t,null,selection,selectionArgs,null,null,null);
+	}
+
 	private <T> void invokeValue(Field field, Cursor cursor, Class<T> t, T instance) {
 		try {
+
 			Class<?> clazz = field.getType();
 			String setName = field.getName();
 			String setNameUpperCase = setName.replaceFirst(setName.substring(0, 1), setName.substring(0, 1).toUpperCase(Locale.getDefault()));
 			if (setNameUpperCase.contains("Is")) {
 				setNameUpperCase = setNameUpperCase.replace("Is", "");
 			}
+			if(setNameUpperCase.equals("SerialVersionUID"))
+				return;
 			Method method = t.getMethod("set" + setNameUpperCase, clazz);
 			String classSimpleName = clazz.getSimpleName();
 			if (classSimpleName.equals("String")) {

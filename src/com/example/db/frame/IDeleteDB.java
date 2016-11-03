@@ -1,4 +1,4 @@
-package com.example.db.frame;
+package com.chazuo.czlib.db;
 
 
 /**

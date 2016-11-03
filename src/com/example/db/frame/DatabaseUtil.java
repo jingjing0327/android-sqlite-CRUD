@@ -1,5 +1,9 @@
-package com.example.db.frame;
+package com.chazuo.czlib.db;
 
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -8,17 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-
 /**
  * 
  * @author LiQiong
  * 
  */
 public class DatabaseUtil {
-	private final static String DBVarChar = "varchar(100)";
+	private final static String DBVarChar = "varchar(200)";
 	private final static String DBInt = "integer";
 	private final static String DBBoolean = "BOOLEAN";
 	private final static String DBFloat = "FLOAT";
@@ -39,6 +39,7 @@ public class DatabaseUtil {
 			count = cursor.getInt(cursor.getColumnIndex("RESULT"));
 		if (count >= 1)
 			return true;
+		cursor.close();
 		return false;
 	}
 
@@ -46,8 +47,6 @@ public class DatabaseUtil {
 	 * create table sql
 	 * 
 	 * @param <T>
-	 * @param tableName
-	 * @param fieldDBs
 	 * @return
 	 */
 	public <T> String createTableSql(Class<T> clazz) {
@@ -88,7 +87,7 @@ public class DatabaseUtil {
 		if ("double".equals(javaType))
 			return DBDouble;
 		try {
-			throw new Throwable("没有这个类型");
+			throw new Throwable("没有这个类型-->"+javaType);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -139,6 +138,9 @@ public class DatabaseUtil {
 		Field[] fields = clazz.getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
 			Field field = fields[i];
+			//Instant Run特性导致
+			if(field.isSynthetic())
+				continue;
 			fieldDB = new FieldDB();
 			fieldDB.setFieldType(javaToDBType(field.getType().getSimpleName()));
 			fieldDB.setFieldName(field.getName());
