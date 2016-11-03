@@ -37,8 +37,10 @@ public class DatabaseUtil {
 		int count = 0;
 		if (cursor.moveToFirst())
 			count = cursor.getInt(cursor.getColumnIndex("RESULT"));
-		if (count >= 1)
+		if (count >= 1){
+			cursor.close();
 			return true;
+		}
 		cursor.close();
 		return false;
 	}
@@ -133,7 +135,7 @@ public class DatabaseUtil {
 	 * @return
 	 */
 	private <T> List<FieldDB> getFieldDB(Class<T> clazz) {
-		List<FieldDB> fieldDBs = new ArrayList<FieldDB>();
+		List<FieldDB> fieldDBs = new ArrayList<>();
 		FieldDB fieldDB = null;
 		Field[] fields = clazz.getDeclaredFields();
 		for (int i = 0; i < fields.length; i++) {
