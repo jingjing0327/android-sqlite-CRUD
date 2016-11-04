@@ -114,7 +114,7 @@ public class DatabaseUtil {
 							Object keyValue = method.invoke(t);
 							if (keyValue == null)
 								keyValue = "null";
-							values.put(fieldDBs.get(j).getFieldName(), method.invoke(t).toString());
+							values.put(fieldDBs.get(j).getFieldName(), keyValue.toString());
 						} catch (IllegalAccessException e) {
 							e.printStackTrace();
 						} catch (IllegalArgumentException e) {
