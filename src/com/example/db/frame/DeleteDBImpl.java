@@ -19,7 +19,7 @@ public class DeleteDBImpl implements IDeleteDB {
 	@Override
 	public <T> int delete(Class<T> t, String whereClause, String[] whereArgs) {
 		try {
-			int number = sqlDb.delete(DatabaseUtil.getTableName(t.getClass()), whereClause, whereArgs);
+			int number = sqlDb.delete(DatabaseUtil.getTableName(t), whereClause, whereArgs);
 			return number;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -30,7 +30,7 @@ public class DeleteDBImpl implements IDeleteDB {
 	@Override
 	public <T> int deleteAll(Class<T> t) {
 		try {
-			int number = sqlDb.delete(DatabaseUtil.getTableName(t.getClass()), null, null);
+			int number = sqlDb.delete(DatabaseUtil.getTableName(t), null, null);
 			return number;
 		} catch (Exception e) {
 			e.printStackTrace();

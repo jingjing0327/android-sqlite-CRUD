@@ -14,4 +14,6 @@ public interface IFindDB {
 	public <T> List<T> find(Class<T> t, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy);
 
 	public <T> List<T> find(Class<T> t, String selection, String[] selectionArgs);
+
+	public <T> int getCount(String sql, String[] paramArgs);
 }
