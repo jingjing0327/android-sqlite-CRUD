@@ -29,7 +29,7 @@ public class UpdateDBImpl implements IUpdateDB {
             DatabaseUtil databaseUtil = new DatabaseUtil();
             ContentValues values = databaseUtil.valuesGet(t);
             // the number of rows affected
-            int affected = sqlDb.update(t.getClass().getSimpleName(), values, whereClause, whereArgs);
+            int affected = sqlDb.update(DatabaseUtil.getTableName(t.getClass()), values, whereClause, whereArgs);
 
             databaseUtil = null;
             return affected;

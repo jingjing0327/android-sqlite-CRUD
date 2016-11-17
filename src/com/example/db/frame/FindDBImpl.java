@@ -32,19 +32,19 @@ public class FindDBImpl implements IFindDB {
 
 	@Override
 	public <T> List<T> findAll(Class<T> t) {
-		if (!DatabaseUtil.isExistTable(sqlDb, t.getSimpleName()))
+		if (!DatabaseUtil.isExistTable(sqlDb, DatabaseUtil.getTableName(t.getClass())))
 			return new ArrayList<T>();
 		return find(t, null, null, null, null, null, null);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> t, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
-		if (!DatabaseUtil.isExistTable(sqlDb, t.getSimpleName()))
+		if (!DatabaseUtil.isExistTable(sqlDb, DatabaseUtil.getTableName(t.getClass())))
 			return new ArrayList<T>();
 		List<T> tList = new ArrayList<T>();
 		try {
 			Field[] field = t.getDeclaredFields();
-			Cursor cursor = sqlDb.query(t.getSimpleName(), columns, selection, selectionArgs, groupBy, having, orderBy);
+			Cursor cursor = sqlDb.query(DatabaseUtil.getTableName(t.getClass()), columns, selection, selectionArgs, groupBy, having, orderBy);
 			while (cursor.moveToNext()) {
 				T instance = t.newInstance();
 				for (int i = 0; i < field.length; i++) {

@@ -50,11 +50,11 @@ public class DatabaseUtil {
      * @param <T>
      * @return
      */
-    public <T> String createTableSql(Class<T> clazz) {
+    public static <T> String createTableSql(Class<T> clazz) {
         List<FieldDB> fieldDBs = getFieldDB(clazz);
         StringBuffer sqlsb = new StringBuffer();
         sqlsb.append("create table ");
-        sqlsb.append(clazz.getSimpleName());
+        sqlsb.append(getTableName(clazz));
         sqlsb.append("(");
         for (int i = 0; i < fieldDBs.size(); i++) {
             sqlsb.append(fieldDBs.get(i).getFieldName());
@@ -71,7 +71,7 @@ public class DatabaseUtil {
      * @param javaType
      * @return
      */
-    public String javaToDBType(String javaType) {
+    public static String javaToDBType(String javaType) {
         if ("String".equals(javaType))
             return DBVarChar;
         if ("int".equals(javaType))
@@ -98,7 +98,7 @@ public class DatabaseUtil {
      * @param t
      * @return
      */
-    public <T> ContentValues valuesGet(T t) {
+    public static <T> ContentValues valuesGet(T t) {
         ContentValues values = new ContentValues();
         List<FieldDB> fieldDBs = getFieldDB(t.getClass());
         Method[] methods = t.getClass().getMethods();
@@ -134,7 +134,7 @@ public class DatabaseUtil {
      * @param clazz
      * @return
      */
-    private <T> List<FieldDB> getFieldDB(Class<T> clazz) {
+    private static <T> List<FieldDB> getFieldDB(Class<T> clazz) {
         List<FieldDB> fieldDBs = new ArrayList<>();
         FieldDB fieldDB = null;
         Field[] fields = clazz.getDeclaredFields();
@@ -149,5 +149,15 @@ public class DatabaseUtil {
             fieldDBs.add(fieldDB);
         }
         return fieldDBs;
+    }
+
+    /**
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public static <T> String getTableName(Class<T> clazz) {
+        String tableName = clazz.getCanonicalName().replace(".", "_");
+        return tableName;
     }
 }

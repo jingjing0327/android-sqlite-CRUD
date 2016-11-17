@@ -24,7 +24,6 @@ public class SaveDBImpl implements ISaveDB {
         this.sqlDb = sqlDb;
     }
 
-    private DatabaseUtil databaseUtil = new DatabaseUtil();
 
     public SaveDBImpl(SQLiteDatabase sqlDb) {
         this.sqlDb = sqlDb;
@@ -33,9 +32,9 @@ public class SaveDBImpl implements ISaveDB {
     @Override
     public <T> long save(T t) {
         synchronized (TAG) {
-            String simpleTableName = t.getClass().getSimpleName();
+            String simpleTableName = DatabaseUtil.getTableName(t.getClass());
             if (!DatabaseUtil.isExistTable(sqlDb, simpleTableName)) {
-                String sql = databaseUtil.createTableSql(t.getClass());
+                String sql = DatabaseUtil.createTableSql(t.getClass());
                 try {
                     sqlDb.execSQL(sql);
                 } catch (Exception e) {
@@ -50,9 +49,9 @@ public class SaveDBImpl implements ISaveDB {
     public <T> void saveAll(List<T> listClazzs) {
         synchronized (TAG) {
             if (listClazzs.size() > 0) {
-                String simpleTableName = listClazzs.get(0).getClass().getSimpleName();
+                String simpleTableName = DatabaseUtil.getTableName(listClazzs.get(0).getClass());
                 if (!DatabaseUtil.isExistTable(sqlDb, simpleTableName)) {
-                    String sql = databaseUtil.createTableSql(listClazzs.get(0).getClass());
+                    String sql = DatabaseUtil.createTableSql(listClazzs.get(0).getClass());
                     sqlDb.execSQL(sql);
                 }
                 for (int i = 0; i < listClazzs.size(); i++) {
@@ -70,8 +69,9 @@ public class SaveDBImpl implements ISaveDB {
      */
     private <T> long insertValue(String table, T t) {
         isFieldSame(table, t);
-        ContentValues values = databaseUtil.valuesGet(t);
-        return sqlDb.insert(table, null, values);
+        ContentValues values = DatabaseUtil.valuesGet(t);
+        long insertNum = sqlDb.insert(table, null, values);
+        return insertNum;
     }
 
     /**
@@ -85,7 +85,12 @@ public class SaveDBImpl implements ISaveDB {
      * @return
      */
     private <T> void isFieldSame(String tableName, T t) {
-        String sql = "SELECT * FROM " + tableName + " limit 0,1";
+        String sql = "SELECT"
+                +" * "
+                +"FROM "
+                + tableName
+                + " limit" +
+                " 0,1";
         Cursor cursor = sqlDb.rawQuery(sql, null);
         Field[] fields = t.getClass().getDeclaredFields();
         String[] columnNames = cursor.getColumnNames();
@@ -95,8 +100,13 @@ public class SaveDBImpl implements ISaveDB {
             //Instant Run特性导致
             if (diffField.get(i).isSynthetic())
                 continue;
-            String sqlAlter = "ALTER TABLE " + tableName + " ADD " + diffField.get(i).getName() + " "
-                    + databaseUtil.javaToDBType(diffField.get(i).getType().getSimpleName());
+            String sqlAlter = "ALTER " +
+                    "TABLE "
+                    + tableName
+                    + " ADD "
+                    + diffField.get(i).getName()
+                    + " "
+                    + DatabaseUtil.javaToDBType(diffField.get(i).getType().getSimpleName());
             sqlDb.execSQL(sqlAlter);
         }
     }
