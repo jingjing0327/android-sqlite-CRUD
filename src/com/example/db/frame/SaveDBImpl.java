@@ -107,7 +107,12 @@ public class SaveDBImpl implements ISaveDB {
                     + diffField.get(i).getName()
                     + " "
                     + DatabaseUtil.javaToDBType(diffField.get(i).getType().getSimpleName());
-            sqlDb.execSQL(sqlAlter);
+            try{
+                //即使执行了add 列，也有可能查询失败
+                sqlDb.execSQL(sqlAlter);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
