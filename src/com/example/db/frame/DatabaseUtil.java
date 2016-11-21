@@ -19,7 +19,7 @@ import java.util.Locale;
 public class DatabaseUtil {
     private final static String DBVarChar = "varchar(200)";
     private final static String DBInt = "integer";
-    private final static String DBBoolean = "BOOLEAN";
+    private final static String DBBoolean = "INTEGER(1)";
     private final static String DBFloat = "FLOAT";
     private final static String DBLong = "INTEGER(4)";
     private final static String DBDouble = "DOUBLE";
@@ -95,6 +95,77 @@ public class DatabaseUtil {
     }
 
     /**
+     * 对比字段，主要是看用户是否在增加 或�?
+     * <p>
+     * 减少字段，现在无法解决，因为sqlite不支持drop COLUMN
+     * </p>
+     *
+     * @param <T>
+     * @return
+     */
+    public static <T> void isFieldSame(SQLiteDatabase sqlDb, T t) {
+        String tableName = getTableName(t.getClass());
+        String sql = "SELECT"
+                + " * "
+                + "FROM "
+                + tableName
+                + " limit" +
+                " 0,1";
+        Cursor cursor = sqlDb.rawQuery(sql, null);
+        Field[] fields = t.getClass().getDeclaredFields();
+        String[] columnNames = cursor.getColumnNames();
+        cursor.close();
+        List<Field> diffField = getDiffField(fields, columnNames);
+        for (int i = 0; i < diffField.size(); i++) {
+            String sqlAlter = "ALTER " +
+                    "TABLE "
+                    + tableName
+                    + " ADD "
+                    + diffField.get(i).getName()
+                    + " "
+                    + DatabaseUtil.javaToDBType(diffField.get(i).getType().getSimpleName());
+            try {
+                //即使执行了add 列，也有可能查询失败
+                sqlDb.execSQL(sqlAlter);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 获取不一样的字段，然后add COLUMN
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    private static List<Field> getDiffField(Field[] a, String[] b) {
+        List<Field> fields = new ArrayList<>();
+        for (int i = 0; i < a.length; i++) {
+            if (!isFieldsExit(a[i].getName(), b) && !a[i].isSynthetic()) {
+                //Instant Run特性导致
+                fields.add(a[i]);
+            }
+        }
+        return fields;
+    }
+
+    /**
+     * @param param
+     * @param b
+     * @return
+     */
+    private static boolean isFieldsExit(String param, String[] b) {
+        for (int i = 0; i < b.length; i++) {
+            if (param.equals(b[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param t
      * @return
      */
@@ -114,7 +185,12 @@ public class DatabaseUtil {
                             Object keyValue = method.invoke(t);
                             if (keyValue == null)
                                 keyValue = "";
-                            values.put(fieldDBs.get(j).getFieldName(), keyValue.toString());
+                            if (keyValue.toString().equals("true"))
+                                values.put(fieldDBs.get(j).getFieldName(), 1);
+                            else if(keyValue.toString().equals("false"))
+                                values.put(fieldDBs.get(j).getFieldName(), 0);
+                            else
+                                values.put(fieldDBs.get(j).getFieldName(), keyValue.toString());
                             break;
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
