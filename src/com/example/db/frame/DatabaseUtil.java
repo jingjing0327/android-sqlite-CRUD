@@ -4,7 +4,6 @@ package com.chazuo.czlib.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -94,6 +93,37 @@ public class DatabaseUtil {
         return null;
     }
 
+    public static <T> void isFieldSameByClass(SQLiteDatabase sqlDb, Class<T> t) {
+        try {
+            String tableName = getTableName(t);
+            String sql = "SELECT"
+                    + " * "
+                    + "FROM "
+                    + tableName
+                    + " limit" +
+                    " 0,1";
+            Cursor cursor = sqlDb.rawQuery(sql, null);
+            Field[] fields = t.getDeclaredFields();
+            String[] columnNames = cursor.getColumnNames();
+            cursor.close();
+            List<FieldDB> diffField = getDiffField(fields, columnNames);
+            for (int i = 0; i < diffField.size(); i++) {
+                String sqlAlter = "ALTER "
+                        + "TABLE "
+                        + tableName
+                        + " ADD "
+                        + diffField.get(i).getFieldName()
+                        + " "
+                        + diffField.get(i).getFieldType();
+
+                //即使执行了add 列，也有可能查询失败
+                sqlDb.execSQL(sqlAlter);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 对比字段，主要是看用户是否在增加 或�?
      * <p>
@@ -104,33 +134,7 @@ public class DatabaseUtil {
      * @return
      */
     public static <T> void isFieldSame(SQLiteDatabase sqlDb, T t) {
-        String tableName = getTableName(t.getClass());
-        String sql = "SELECT"
-                + " * "
-                + "FROM "
-                + tableName
-                + " limit" +
-                " 0,1";
-        Cursor cursor = sqlDb.rawQuery(sql, null);
-        Field[] fields = t.getClass().getDeclaredFields();
-        String[] columnNames = cursor.getColumnNames();
-        cursor.close();
-        List<Field> diffField = getDiffField(fields, columnNames);
-        for (int i = 0; i < diffField.size(); i++) {
-            String sqlAlter = "ALTER " +
-                    "TABLE "
-                    + tableName
-                    + " ADD "
-                    + diffField.get(i).getName()
-                    + " "
-                    + DatabaseUtil.javaToDBType(diffField.get(i).getType().getSimpleName());
-            try {
-                //即使执行了add 列，也有可能查询失败
-                sqlDb.execSQL(sqlAlter);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        isFieldSameByClass(sqlDb, t.getClass());
     }
 
     /**
@@ -140,12 +144,25 @@ public class DatabaseUtil {
      * @param b
      * @return
      */
-    private static List<Field> getDiffField(Field[] a, String[] b) {
-        List<Field> fields = new ArrayList<>();
+    private static List<FieldDB> getDiffField(Field[] a, String[] b) {
+        List<FieldDB> fields = new ArrayList<>();
         for (int i = 0; i < a.length; i++) {
             if (!isFieldsExit(a[i].getName(), b) && !a[i].isSynthetic()) {
                 //Instant Run特性导致
-                fields.add(a[i]);
+                String primarykeyStr = null;
+                PrimaryKey primarykey = a[i].getAnnotation(PrimaryKey.class);
+                AutoPrimaryKey autoPrimaryKey = a[i].getAnnotation(AutoPrimaryKey.class);
+                if (primarykey != null) {
+                    primarykeyStr = " PRIMARY KEY";
+                }
+                if (autoPrimaryKey != null) {
+                    primarykeyStr = " PRIMARY KEY AUTOINCREMENT";
+                }
+
+                FieldDB fieldDB = new FieldDB();
+                fieldDB.setFieldName(a[i].getName());
+                fieldDB.setFieldType(javaToDBType(a[i].getType().getSimpleName()) + primarykeyStr);
+                fields.add(fieldDB);
             }
         }
         return fields;
@@ -187,7 +204,7 @@ public class DatabaseUtil {
                                 keyValue = "";
                             if (keyValue.toString().equals("true"))
                                 values.put(fieldDBs.get(j).getFieldName(), 1);
-                            else if(keyValue.toString().equals("false"))
+                            else if (keyValue.toString().equals("false"))
                                 values.put(fieldDBs.get(j).getFieldName(), 0);
                             else
                                 values.put(fieldDBs.get(j).getFieldName(), keyValue.toString());
@@ -214,14 +231,24 @@ public class DatabaseUtil {
         List<FieldDB> fieldDBs = new ArrayList<>();
         FieldDB fieldDB = null;
         Field[] fields = clazz.getDeclaredFields();
+
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
+            String primarykeyStr = null;
+            PrimaryKey primarykey = field.getAnnotation(PrimaryKey.class);
+            AutoPrimaryKey autoPrimaryKey = field.getAnnotation(AutoPrimaryKey.class);
+            if (primarykey != null) {
+                primarykeyStr = " PRIMARY KEY";
+            }
+            if (autoPrimaryKey != null) {
+                primarykeyStr = " PRIMARY KEY AUTOINCREMENT";
+            }
             //Instant Run特性导致
             if (field.isSynthetic())
                 continue;
             fieldDB = new FieldDB();
-            fieldDB.setFieldType(javaToDBType(field.getType().getSimpleName()));
             fieldDB.setFieldName(field.getName());
+            fieldDB.setFieldType(javaToDBType(field.getType().getSimpleName()) + primarykeyStr);
             fieldDBs.add(fieldDB);
         }
         return fieldDBs;

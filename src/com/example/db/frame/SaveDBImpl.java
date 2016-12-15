@@ -73,8 +73,4 @@ public class SaveDBImpl implements ISaveDB {
         long insertNum = sqlDb.insert(table, null, values);
         return insertNum;
     }
-
-
-
-
 }

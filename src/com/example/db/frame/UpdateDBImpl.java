@@ -31,11 +31,8 @@ public class UpdateDBImpl implements IUpdateDB {
         try {
             DatabaseUtil.isFieldSame(sqlDb, t);
             ContentValues values = DatabaseUtil.valuesGet(t);
-            Log.e("liqiong",values.toString());
             // the number of rows affected
-            String tableName=DatabaseUtil.getTableName(t.getClass());
-            Log.e("liqiong",tableName);
-            Log.e("liqiong","---->>>"+sqlDb.isDbLockedByCurrentThread());
+            String tableName = DatabaseUtil.getTableName(t.getClass());
             int affected = sqlDb.update(tableName, values, whereClause, whereArgs);
             return affected;
         } catch (Exception e) {
@@ -43,5 +40,14 @@ public class UpdateDBImpl implements IUpdateDB {
         }
         return 0;
 
+    }
+
+    @Override
+    public void update(String sql) {
+        try {
+            sqlDb.execSQL(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

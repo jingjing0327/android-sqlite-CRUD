@@ -38,8 +38,6 @@ public class FindDBImpl implements IFindDB {
 
     @Override
     public <T> List<T> find(Class<T> t, String[] columns, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
-        if (!DatabaseUtil.isExistTable(sqlDb, DatabaseUtil.getTableName(t)))
-            return new ArrayList<T>();
         List<T> tList = new ArrayList<T>();
         try {
             Field[] field = t.getDeclaredFields();
@@ -66,13 +64,13 @@ public class FindDBImpl implements IFindDB {
     }
 
     @Override
-    public <T> List<T> rawFind(Class<T> t, String sql,String[] selectionArgs) {
+    public <T> List<T> rawFind(Class<T> t, String sql, String[] selectionArgs) {
         if (!DatabaseUtil.isExistTable(sqlDb, DatabaseUtil.getTableName(t)))
             return new ArrayList<T>();
         List<T> tList = new ArrayList<T>();
         try {
             Field[] field = t.getDeclaredFields();
-            Cursor cursor = sqlDb.rawQuery(sql,selectionArgs);
+            Cursor cursor = sqlDb.rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
                 T instance = t.newInstance();
                 for (int i = 0; i < field.length; i++) {
@@ -91,14 +89,19 @@ public class FindDBImpl implements IFindDB {
 
 
     @Override
-    public  int getCount(String sql, String[] paramArgs) {
+    public int getCount(String sql, String[] paramArgs) {
 //        String sql = "SELECT COUNT(*) as RESULT FROM ?";
-        Cursor cursor = sqlDb.rawQuery(sql, paramArgs);
-        int count = 0;
-        if (cursor.moveToFirst())
-            count = cursor.getInt(cursor.getColumnIndex("RESULT"));
-        cursor.close();
-        return count;
+        try {
+            Cursor cursor = sqlDb.rawQuery(sql, paramArgs);
+            int count = 0;
+            if (cursor.moveToFirst())
+                count = cursor.getInt(cursor.getColumnIndex("RESULT"));
+            cursor.close();
+            return count;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     private <T> void invokeValue(Field field, Cursor cursor, Class<T> t, T instance) {
@@ -113,18 +116,24 @@ public class FindDBImpl implements IFindDB {
                 return;
             Method method = t.getMethod("set" + setNameUpperCase, clazz);
             String classSimpleName = clazz.getSimpleName();
-            if (classSimpleName.equals("String")) {
-                method.invoke(instance, cursor.getString(cursor.getColumnIndex(setName)));
-            } else if (classSimpleName.equals("float")) {
-                method.invoke(instance, cursor.getFloat(cursor.getColumnIndex(setName)));
-            } else if (classSimpleName.equals("boolean")) {
-                method.invoke(instance, cursor.getInt(cursor.getColumnIndex(setName)) > 0);
-            } else if (classSimpleName.equals("int")) {
-                method.invoke(instance, cursor.getInt(cursor.getColumnIndex(setName)));
-            } else if (classSimpleName.equals("long")) {
-                method.invoke(instance, cursor.getLong(cursor.getColumnIndex(setName)));
-            } else if (classSimpleName.equals("double")) {
-                method.invoke(instance, cursor.getDouble(cursor.getColumnIndex(setName)));
+            int columnIndex = cursor.getColumnIndex(setName);
+            if (columnIndex != -1) {
+                Object value = null;
+                if (classSimpleName.equals("String")) {
+                    value = cursor.getString(columnIndex);
+                } else if (classSimpleName.equals("float")) {
+                    value = cursor.getFloat(cursor.getColumnIndex(setName));
+                } else if (classSimpleName.equals("boolean")) {
+                    value = cursor.getInt(cursor.getColumnIndex(setName)) > 0;
+                } else if (classSimpleName.equals("int")) {
+                    value = cursor.getInt(cursor.getColumnIndex(setName));
+                } else if (classSimpleName.equals("long")) {
+                    value = cursor.getLong(cursor.getColumnIndex(setName));
+                } else if (classSimpleName.equals("double")) {
+                    value = cursor.getDouble(cursor.getColumnIndex(setName));
+                }
+                if (value != null)
+                    method.invoke(instance, value);
             }
         } catch (Exception e) {
             e.printStackTrace();
