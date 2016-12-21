@@ -149,23 +149,61 @@ public class DatabaseUtil {
         for (int i = 0; i < a.length; i++) {
             if (!isFieldsExit(a[i].getName(), b) && !a[i].isSynthetic()) {
                 //Instant Run特性导致
-                String primarykeyStr = null;
+                String primaryKeyStr = "";
                 PrimaryKey primarykey = a[i].getAnnotation(PrimaryKey.class);
                 AutoPrimaryKey autoPrimaryKey = a[i].getAnnotation(AutoPrimaryKey.class);
                 if (primarykey != null) {
-                    primarykeyStr = " PRIMARY KEY";
+                    primaryKeyStr = " PRIMARY KEY";
                 }
                 if (autoPrimaryKey != null) {
-                    primarykeyStr = " PRIMARY KEY AUTOINCREMENT";
+                    primaryKeyStr = " PRIMARY KEY AUTOINCREMENT";
                 }
 
-                FieldDB fieldDB = new FieldDB();
-                fieldDB.setFieldName(a[i].getName());
-                fieldDB.setFieldType(javaToDBType(a[i].getType().getSimpleName()) + primarykeyStr);
-                fields.add(fieldDB);
+                String dbType = javaToDBType(a[i].getType().getSimpleName());
+                if (dbType != null) {
+                    FieldDB fieldDB = new FieldDB();
+                    fieldDB.setFieldName(a[i].getName());
+                    fieldDB.setFieldType(dbType + primaryKeyStr);
+                    fields.add(fieldDB);
+                }
             }
         }
         return fields;
+    }
+
+    /**
+     * @param clazz
+     * @return
+     */
+    private static <T> List<FieldDB> getFieldDB(Class<T> clazz) {
+        List<FieldDB> fieldDBs = new ArrayList<>();
+        FieldDB fieldDB = null;
+        Field[] fields = clazz.getDeclaredFields();
+
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            String primaryKeyStr = "";
+            PrimaryKey primarykey = field.getAnnotation(PrimaryKey.class);
+            AutoPrimaryKey autoPrimaryKey = field.getAnnotation(AutoPrimaryKey.class);
+            if (primarykey != null) {
+                primaryKeyStr = " PRIMARY KEY";
+            }
+            if (autoPrimaryKey != null) {
+                primaryKeyStr = " PRIMARY KEY AUTOINCREMENT";
+            }
+            //Instant Run特性导致
+            if (field.isSynthetic())
+                continue;
+
+            String dbType = javaToDBType(field.getType().getSimpleName());
+            if (dbType != null) {
+                fieldDB = new FieldDB();
+                fieldDB.setFieldName(field.getName());
+                fieldDB.setFieldType(dbType + primaryKeyStr);
+                fieldDBs.add(fieldDB);
+            }
+        }
+        return fieldDBs;
     }
 
     /**
@@ -223,36 +261,6 @@ public class DatabaseUtil {
         return values;
     }
 
-    /**
-     * @param clazz
-     * @return
-     */
-    private static <T> List<FieldDB> getFieldDB(Class<T> clazz) {
-        List<FieldDB> fieldDBs = new ArrayList<>();
-        FieldDB fieldDB = null;
-        Field[] fields = clazz.getDeclaredFields();
-
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
-            String primarykeyStr = null;
-            PrimaryKey primarykey = field.getAnnotation(PrimaryKey.class);
-            AutoPrimaryKey autoPrimaryKey = field.getAnnotation(AutoPrimaryKey.class);
-            if (primarykey != null) {
-                primarykeyStr = " PRIMARY KEY";
-            }
-            if (autoPrimaryKey != null) {
-                primarykeyStr = " PRIMARY KEY AUTOINCREMENT";
-            }
-            //Instant Run特性导致
-            if (field.isSynthetic())
-                continue;
-            fieldDB = new FieldDB();
-            fieldDB.setFieldName(field.getName());
-            fieldDB.setFieldType(javaToDBType(field.getType().getSimpleName()) + primarykeyStr);
-            fieldDBs.add(fieldDB);
-        }
-        return fieldDBs;
-    }
 
     /**
      * @param clazz
