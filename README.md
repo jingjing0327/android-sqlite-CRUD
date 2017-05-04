@@ -67,6 +67,5 @@ allprojects {
 dependencies {
         compile 'com.github.jingjing0327:android-sqlite-CRUD:0.1.0'
 }
-
 //--------------------------------------------
 ```
