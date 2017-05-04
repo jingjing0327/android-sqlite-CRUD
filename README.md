@@ -54,3 +54,22 @@ String[] whereArgs1 = { "0" };
 crud.update(p1, "id=?", whereArgs1);
 //---------------------------------------
 ```
+
+```java
+// 使用-----------------------------
+allprojects {
+		repositories {
+			...
+			maven { url 'https://www.jitpack.io' }
+		}
+	}
+//--------------------------------------------
+```
+
+```java
+// 使用-----------------------------
+	dependencies {
+		compile 'com.github.User:Repo:Tag'
+	}
+//--------------------------------------------
+```
