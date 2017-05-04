@@ -63,13 +63,10 @@ allprojects {
 			maven { url 'https://www.jitpack.io' }
 		}
 	}
-//--------------------------------------------
-```
 
-```java
-// 使用-----------------------------
-	dependencies {
-		compile 'com.github.User:Repo:Tag'
-	}
+dependencies {
+        compile 'com.github.jingjing0327:android-sqlite-CRUD:0.1.0'
+}
+
 //--------------------------------------------
 ```
