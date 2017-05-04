@@ -58,11 +58,11 @@ crud.update(p1, "id=?", whereArgs1);
 ```java
 // 使用-----------------------------
 allprojects {
-		repositories {
-			...
-			maven { url 'https://www.jitpack.io' }
-		}
+	repositories {
+		...
+		maven { url 'https://www.jitpack.io' }
 	}
+}
 
 dependencies {
         compile 'com.github.jingjing0327:android-sqlite-CRUD:0.1.0'
