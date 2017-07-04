@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.chazuo.czlib.module.impl.CZController;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.Locale;
  * @author LiQiong
  */
 public class FindDBImpl implements IFindDB {
+    private final static String TAG = FindDBImpl.class.getSimpleName();
     private SQLiteDatabase sqlDb;
 
     public SQLiteDatabase getSqlDb() {
@@ -53,7 +56,7 @@ public class FindDBImpl implements IFindDB {
             }
             cursor.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            CZController.log.print(e.getMessage());
         }
         return tList;
     }
@@ -99,7 +102,7 @@ public class FindDBImpl implements IFindDB {
             cursor.close();
             return count;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "getCount: no such table");
         }
         return 0;
     }
@@ -109,21 +112,23 @@ public class FindDBImpl implements IFindDB {
             Class<?> clazz = field.getType();
             String setName = field.getName();
             String setNameUpperCase = setName.replaceFirst(setName.substring(0, 1), setName.substring(0, 1).toUpperCase(Locale.getDefault()));
-            if (setNameUpperCase.contains("Is")) {
-                setNameUpperCase = setNameUpperCase.replace("Is", "");
-            }
+
             if (setNameUpperCase.equals("SerialVersionUID"))
                 return;
-            Method method = t.getMethod("set" + setNameUpperCase, clazz);
+            Method method = null;
+
             String classSimpleName = clazz.getSimpleName();
             int columnIndex = cursor.getColumnIndex(setName);
             if (columnIndex != -1) {
                 Object value = null;
+
                 if (classSimpleName.equals("String")) {
                     value = cursor.getString(columnIndex);
                 } else if (classSimpleName.equals("float")) {
                     value = cursor.getFloat(cursor.getColumnIndex(setName));
                 } else if (classSimpleName.equals("boolean")) {
+                    if (setNameUpperCase.contains("Is"))
+                        setNameUpperCase = setNameUpperCase.replace("Is", "");
                     value = cursor.getInt(cursor.getColumnIndex(setName)) > 0;
                 } else if (classSimpleName.equals("int")) {
                     value = cursor.getInt(cursor.getColumnIndex(setName));
@@ -132,7 +137,12 @@ public class FindDBImpl implements IFindDB {
                 } else if (classSimpleName.equals("double")) {
                     value = cursor.getDouble(cursor.getColumnIndex(setName));
                 }
-                if (value != null)
+                try {
+                    method = t.getMethod("set" + setNameUpperCase, clazz);
+                } catch (NoSuchMethodException e) {
+                    Log.e(TAG, "没有这个方法！-->>" + "set" + setNameUpperCase);
+                }
+                if (method != null && value != null)
                     method.invoke(instance, value);
             }
         } catch (Exception e) {
